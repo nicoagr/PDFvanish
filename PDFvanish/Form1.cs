@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using static System.Net.WebRequestMethods;
 
 namespace PDFvanish
 {
@@ -46,7 +42,60 @@ namespace PDFvanish
 
         private void actionBtn_Click(object sender, EventArgs e)
         {
-            ;
+            actionBtn.Enabled = false;
+            List<string> inw = new List<string>();
+            List<string> outw = new List<string>();
+            List<string> errorw = new List<string>();
+
+            // file by file we have to remove the metadata
+            foreach (string file in fileList.Items)
+            {
+                string outFileName = file.Replace(".pdf", "_vanish.pdf");
+                // optimized method for modifying txt large files
+                // modified from https://stackoverflow.com/a/46519381
+                if (File.Exists(file))
+                {
+                    using (var sw = new StreamWriter(outFileName))
+                    using (var fs = File.OpenRead(file))
+                    using (var sr = new StreamReader(fs, Encoding.GetEncoding("iso-8859-1"))) //use iso encoding because pdf weird
+                    {
+                        string line, newLine;
+
+                        while ((line = sr.ReadLine()) != null)
+                        {
+                            // replace actual metadata with empty strings
+                            // regex modified from https://stackoverflow.com/a/7899162
+                            newLine = line;
+                            newLine = Regex.Replace(newLine, "\\/Author[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Author()");
+                            newLine = Regex.Replace(newLine, "\\/Creator[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Creator()");
+                            newLine = Regex.Replace(newLine, "\\/Subject[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Subject()");
+                            newLine = Regex.Replace(newLine, "\\/Title[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Title()");
+                            newLine = Regex.Replace(newLine, "\\/Keywords[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Keywords()");
+                            newLine = Regex.Replace(newLine, "\\/Producer[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Producer()");
+                            newLine = Regex.Replace(newLine, "\\/CreationDate[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/CreationDate()");
+                            newLine = Regex.Replace(newLine, "\\/ModDate[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/ModDate()");
+                            newLine = Regex.Replace(newLine, "\\/PTEX.Fullbanner[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/PTEX.Fullbanner()");
+
+
+                            // todo: modify windows system dates
+
+
+                            sw.WriteLine(newLine);
+                        }
+                    }
+                    inw.Add(file); outw.Add(outFileName);
+                }
+                else errorw.Add(file);
+            }
+            foreach (string s in errorw) fileList.Items.Remove(s);
+            for (int i = 0; i < inw.Count; i++)
+            {
+                fileList.Items.Remove(inw[i]);
+                fileList.Items.Add(outw[i]);
+            }
+            MessageBox.Show("Metadata Removed and output files produced!", "PDFvanish v1.0", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            actionBtn.Enabled = true;
+
         }
 
         private void fileList_DragEnter(object sender, DragEventArgs e)
