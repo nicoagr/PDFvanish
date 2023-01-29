@@ -20,8 +20,8 @@ namespace PDFvanish
 
         private void fileList_DragDrop(object sender, DragEventArgs e)
         {
-            // If we drop a file
-            if (e.Data.GetDataPresent(DataFormats.FileDrop)) {
+            // If we drop a file && form enabled
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) && fileList.Enabled) {
                 
                 string[] dropped = (string[])e.Data.GetData(DataFormats.FileDrop);
                 foreach (string filepath in dropped)
@@ -117,12 +117,13 @@ namespace PDFvanish
             }
             MessageBox.Show("Metadata Removed and output files produced!", "PDFvanish v1.0", MessageBoxButtons.OK, MessageBoxIcon.Information);
             actionBtn.Enabled = true;
+            fileList.Enabled = false;
 
         }
 
         private void fileList_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) && fileList.Enabled)
             {
                 e.Effect = DragDropEffects.Copy;
             }
@@ -134,16 +135,19 @@ namespace PDFvanish
 
         private void fileList_DoubleClick(object sender, EventArgs e)
         {
-            //remove item if we double click
-            if (fileList.SelectedItem != null)
+            if (fileList.Enabled)
             {
-                fileList.Items.Remove(fileList.SelectedItem);
-                if (fileList.Items.Count == 0)
+                //remove item if we double click
+                if (fileList.SelectedItem != null)
                 {
-                    fileList.Font = new System.Drawing.Font(fileList.Font.FontFamily, (float)16.2, FontStyle.Regular);
-                    fileList.Items.Add("Drag & Drop Items Here");
-                    actionBtn.Focus();
-                    this.AcceptButton = actionBtn;
+                    fileList.Items.Remove(fileList.SelectedItem);
+                    if (fileList.Items.Count == 0)
+                    {
+                        fileList.Font = new System.Drawing.Font(fileList.Font.FontFamily, (float)16.2, FontStyle.Regular);
+                        fileList.Items.Add("Drag & Drop Items Here");
+                        actionBtn.Focus();
+                        this.AcceptButton = actionBtn;
+                    }
                 }
             }
         }
@@ -160,8 +164,8 @@ namespace PDFvanish
                     {
                         if (Path.GetExtension(filepath).Equals(".pdf"))
                         {
-                            // if textbox empty
-                            if (fileList.Items.Count == 1 && fileList.Items[0].Equals("Drag & Drop Items Here"))
+                            // if textbox empty or if textbox disabled
+                            if ((fileList.Items.Count == 1 && fileList.Items[0].Equals("Drag & Drop Items Here")) || !fileList.Enabled)
                             {
                                 fileList.Font = new System.Drawing.Font(fileList.Font.FontFamily, 10, FontStyle.Regular);
                                 fileList.Items.Clear();
@@ -169,6 +173,7 @@ namespace PDFvanish
                             if (!fileList.Items.Contains(filepath)) fileList.Items.Add(filepath);
                             actionBtn.Focus();
                             this.AcceptButton = actionBtn;
+                            fileList.Enabled = true;
                         }
                     }
                 }
@@ -180,6 +185,7 @@ namespace PDFvanish
             fileList.Items.Clear();
             fileList.Font = new System.Drawing.Font(fileList.Font.FontFamily, (float)16.2, FontStyle.Regular);
             fileList.Items.Add("Drag & Drop Items Here");
+            fileList.Enabled = true;
             selectFileBtn.Focus();
             this.AcceptButton = selectFileBtn;
         }
