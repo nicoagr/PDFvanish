@@ -1,13 +1,13 @@
 ﻿using iTextSharp.text;
 using iTextSharp.text.pdf;
+using iTextSharp.text.pdf.parser;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
+using System.Reflection;
 using System.Windows.Forms;
+using Path = System.IO.Path;
 
 namespace PDFvanish
 {
@@ -49,70 +49,16 @@ namespace PDFvanish
             List<string> inw = new List<string>();
             List<string> outw = new List<string>();
             List<string> errorw = new List<string>();
+            DateTime mintime = new DateTime(1601, 1, 1, 0, 0, 1, DateTimeKind.Utc);
 
             // file by file we have to remove the metadata
             foreach (string file in fileList.Items)
             {
                 string outFileName = file.Replace(".pdf", "_vanish.pdf");
-                // optimized method for modifying txt large files
-                // modified from https://stackoverflow.com/a/46519381
                 if (File.Exists(file))
                 {
-                    //using (var sw = new StreamWriter(outFileName))
-                    //using (var fs = File.OpenRead(file))
-                    ////using (var sr = new StreamReader(fs, Encoding.GetEncoding("iso-8859-1"))) //use iso encoding because pdf weird
-                    //using (var sr = new StreamReader(fs, Encoding.GetEncoding(1252))) //use ansi (latin) encoding because pdf weird
-                    //{
-                    //    string line, newLine;
-
-                    //    while ((line = sr.ReadLine()) != null)
-                    //    {
-                    //        // replace actual metadata with empty strings
-                    //        // regex modified from https://stackoverflow.com/a/7899162
-                    //        newLine = line;
-                    //        newLine = Regex.Replace(newLine, "\\/Author[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Author()");
-                    //        newLine = Regex.Replace(newLine, "\\/Creator[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Creator()");
-                    //        newLine = Regex.Replace(newLine, "\\/Subject[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Subject()");
-                    //        newLine = Regex.Replace(newLine, "\\/Title[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Title()");
-                    //        newLine = Regex.Replace(newLine, "\\/Keywords[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Keywords()");
-                    //        newLine = Regex.Replace(newLine, "\\/Producer[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Producer()");
-                    //        newLine = Regex.Replace(newLine, "\\/CreationDate[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/CreationDate()");
-                    //        newLine = Regex.Replace(newLine, "\\/ModDate[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/ModDate()");
-                    //        newLine = Regex.Replace(newLine, "\\/PTEX.Fullbanner[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/PTEX.Fullbanner()");
-
-
-
-
-                    //        sw.WriteLine(newLine);
-                    //    }
-                    //}
-
-
-                    //string newLine = File.ReadAllText(file);
-                    //newLine = Regex.Replace(newLine, "\\/Author[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Author()");
-                    //newLine = Regex.Replace(newLine, "\\/Creator[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Creator()");
-                    //newLine = Regex.Replace(newLine, "\\/Subject[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Subject()");
-                    //newLine = Regex.Replace(newLine, "\\/Title[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Title()");
-                    //newLine = Regex.Replace(newLine, "\\/Keywords[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Keywords()");
-                    //newLine = Regex.Replace(newLine, "\\/Producer[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/Producer()");
-                    //newLine = Regex.Replace(newLine, "\\/CreationDate[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/CreationDate()");
-                    //newLine = Regex.Replace(newLine, "\\/ModDate[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/ModDate()");
-                    //newLine = Regex.Replace(newLine, "\\/PTEX.Fullbanner[ ]?\\(((?<BR>\\()|(?<-BR>\\))|[^()]*)+\\)", "/PTEX.Fullbanner()");
-
-                    //File.WriteAllText(outFileName, newLine, Encoding.Default);
-
-                    //StreamWriter writer = new StreamWriter(outFileName, true, Encoding.GetEncoding("iso-8859-1"));
-                    //writer.Write(newLine);
-                    //writer.Close();
-
-                    // todo: modify windows system dates
-                    
+                    // remove info from pdf
                     PdfReader R = new PdfReader(file);
-                    //Loop through each piece of meta data and remove it
-                    //foreach (KeyValuePair<string, string> KV in R.Info)
-                    //{
-                    //    R.Info.Remove(KV.Key);
-                    //}
                     R.Info["Title"] = null;
                     R.Info["Author"] = null;
                     R.Info["Subject"] = null;
@@ -123,18 +69,7 @@ namespace PDFvanish
                     R.Info["ModDate"] = null;
                     R.Info["Trapped"] = null;
 
-
-
-                    //R.Info.Add("Title", null);
-                    //R.Info.Add("Author", null);
-                    //R.Info.Add("Subject", null);
-                    //R.Info.Add("Keywords", null);
-                    //R.Info.Add("Creator", null);
-                    //R.Info.Add("Producer", null);
-                    //R.Info.Add("CreationDate", null);
-                    //R.Info.Add("ModDate", null);
-                    //R.Info.Add("Trapped", null);
-                    // save changes to disk
+                    // save the pdf
                     using (FileStream FS = new FileStream(outFileName, FileMode.Create, FileAccess.Write, FileShare.None))
                     {
                         using (Document Doc = new Document())
@@ -153,6 +88,19 @@ namespace PDFvanish
                             }
                         }
                     }
+
+                    // modify windows system dates
+                    // Set the file's creation and modification dates to the minimum possible value
+                    if (File.Exists(outFileName))
+                    {
+                        File.SetLastWriteTime(outFileName, mintime);
+                        File.SetCreationTime(outFileName, mintime);
+                        File.SetLastAccessTime(outFileName, mintime);
+
+
+
+                    }
+
 
 
                     inw.Add(file); outw.Add(outFileName);
