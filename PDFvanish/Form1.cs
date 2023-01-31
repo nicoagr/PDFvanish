@@ -35,6 +35,7 @@ namespace PDFvanish
                             fileList.Items.Clear();
                         }
                         if (!fileList.Items.Contains(filepath)) fileList.Items.Add(filepath);
+                        actionBtn.Enabled = true;
                         actionBtn.Focus();
                         this.AcceptButton = actionBtn;
                     }
@@ -93,15 +94,10 @@ namespace PDFvanish
                     // Set the file's creation and modification dates to the minimum possible value
                     if (File.Exists(outFileName))
                     {
-                        File.SetLastWriteTime(outFileName, mintime);
-                        File.SetCreationTime(outFileName, mintime);
-                        File.SetLastAccessTime(outFileName, mintime);
-
-
-
+                        File.SetLastWriteTimeUtc(outFileName, mintime);
+                        File.SetCreationTimeUtc(outFileName, mintime);
+                        File.SetLastAccessTimeUtc(outFileName, mintime);
                     }
-
-
 
                     inw.Add(file); outw.Add(outFileName);
 
@@ -115,10 +111,9 @@ namespace PDFvanish
                 fileList.Items.Remove(inw[i]);
                 fileList.Items.Add(outw[i]);
             }
-            MessageBox.Show("Metadata Removed and output files produced!", "PDFvanish v1.0", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            actionBtn.Enabled = true;
+            actionBtn.Enabled = false;
             fileList.Enabled = false;
-
+            MessageBox.Show("Metadata Removed and output files produced!", "PDFvanish v1.0", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void fileList_DragEnter(object sender, DragEventArgs e)
@@ -172,6 +167,7 @@ namespace PDFvanish
                             }
                             if (!fileList.Items.Contains(filepath)) fileList.Items.Add(filepath);
                             actionBtn.Focus();
+                            actionBtn.Enabled = true;
                             this.AcceptButton = actionBtn;
                             fileList.Enabled = true;
                         }
@@ -186,6 +182,7 @@ namespace PDFvanish
             fileList.Font = new System.Drawing.Font(fileList.Font.FontFamily, (float)16.2, FontStyle.Regular);
             fileList.Items.Add("Drag & Drop Items Here");
             fileList.Enabled = true;
+            actionBtn.Enabled = false;
             selectFileBtn.Focus();
             this.AcceptButton = selectFileBtn;
         }
