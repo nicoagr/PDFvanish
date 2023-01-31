@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PDFvanish));
             this.fileList = new System.Windows.Forms.ListBox();
             this.actionBtn = new System.Windows.Forms.Button();
             this.selectFileBtn = new System.Windows.Forms.Button();
@@ -109,6 +110,7 @@
             this.Controls.Add(this.actionBtn);
             this.Controls.Add(this.fileList);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "PDFvanish";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

@@ -114,6 +114,7 @@ namespace PDFvanish
             actionBtn.Enabled = false;
             fileList.Enabled = false;
             MessageBox.Show("Metadata Removed and output files produced!", "PDFvanish v1.0", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            clearListBtn.Focus();
         }
 
         private void fileList_DragEnter(object sender, DragEventArgs e)
